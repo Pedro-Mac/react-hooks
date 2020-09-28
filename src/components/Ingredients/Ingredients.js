@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -6,6 +6,17 @@ import Search from './Search';
 
 const Ingredients = () => {
   const [userIngredients, setUserIngredients] = useState([]);
+
+  useEffect(() => {
+    console.log('Rendering ingredients', userIngredients);
+  }, [userIngredients]); // this will run only when userIngredients changed!!!
+
+  const handleFilteredIngredients = useCallback(
+    filteredIngredients => {
+      setUserIngredients(filteredIngredients);
+    },
+    [] /*if we pass an empty array, is as if we used ComponentDidMount*/
+  );
 
   const addIngredientHandler = ingredient => {
     fetch('https://react-hooks-ef995.firebaseio.com/ingredients.json', {
@@ -39,7 +50,7 @@ const Ingredients = () => {
       <IngredientForm onAddingIngredient={addIngredientHandler} />
 
       <section>
-        <Search />
+        <Search onLoadIngredients={handleFilteredIngredients} />
         <IngredientList
           ingredients={userIngredients}
           onRemoveItem={removeIngredientHandler}
