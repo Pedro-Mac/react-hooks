@@ -9,7 +9,7 @@ const IngredientForm = React.memo(props => {
 
   const submitHandler = event => {
     event.preventDefault();
-    // ...
+    props.onAddingIngredient({ title: enteredTitle, amount: enteredAmount });
   };
 
   return (
@@ -23,8 +23,7 @@ const IngredientForm = React.memo(props => {
               id="title"
               value={enteredTitle}
               onChange={e => {
-                const newTitle = e.target.value;
-                setEnteredTitle(() => newTitle);
+                setEnteredTitle(e.target.value);
               }}
             />
           </div>
@@ -33,10 +32,9 @@ const IngredientForm = React.memo(props => {
             <input
               type="number"
               id="amount"
-              value={enteredAmount.amount}
+              value={enteredAmount}
               onChange={e => {
-                const newAmount = e.target.value;
-                setEnteredAmount(() => newAmount);
+                setEnteredAmount(e.target.value);
               }}
             />
           </div>
