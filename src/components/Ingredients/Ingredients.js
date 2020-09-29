@@ -11,6 +11,7 @@ import ErrorModal from './../UI/ErrorModal';
 
 import Search from './Search';
 
+//REDUCERS
 // !!! THIS IS NOT RELATED TO REDUX, BUT TO REACT USEREDUCER  !!!
 const ingredientReducer = (currentIngredients, action) => {
   switch (action.type) {
@@ -25,11 +26,30 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
+const httpReducer = (currentHttpState, action) => {
+  switch (action.type) {
+    case 'SEND':
+      return { loading: true, error: null };
+    case 'RESPONSE':
+      return { ...currentHttpState, loading: false };
+    case 'ERROR':
+      return { loading: false, error: action.errorData };
+    case 'CLEAR_ERROR':
+      return { loading: false, error: null };
+    default:
+      throw new Error('This should not be reached');
+  }
+};
+
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null
+  });
   // const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState();
 
   useEffect(() => {
     console.log('Rendering ingredients', userIngredients);
@@ -44,14 +64,16 @@ const Ingredients = () => {
   );
 
   const addIngredientHandler = ingredient => {
-    setIsLoading(true);
+    //setIsLoading(true);
+    dispatchHttp({ type: 'SEND' });
     fetch('https://react-hooks-ef995.firebaseio.com/ingredients.json', {
       method: 'POST',
       body: JSON.stringify(ingredient),
       headers: { 'Content-Type': 'application/json' }
     })
       .then(res => {
-        setIsLoading(false);
+        //setIsLoading(false);
+        dispatchHttp({ type: 'RESPONSE' });
         return res.json();
       })
       .then(data => {
@@ -64,7 +86,8 @@ const Ingredients = () => {
   };
 
   const removeIngredientHandler = ingredient => {
-    setIsLoading(true);
+    //setIsLoading(true);
+    dispatchHttp({ type: 'SEND' });
     fetch(
       `https://react-hooks-ef995.firebaseio.com/ingredients/${ingredient}.json`,
       {
@@ -72,7 +95,8 @@ const Ingredients = () => {
       }
     )
       .then(() => {
-        setIsLoading(false);
+        //setIsLoading(false);
+        dispatchHttp({ type: 'RESPONSE' });
         // setUserIngredients(prevIngredients => {
         //   const auxArray = prevIngredients.filter(value => {
         //     return value.id !== ingredient;
@@ -83,22 +107,25 @@ const Ingredients = () => {
         dispatch({ type: 'DELETE', id: ingredient });
       })
       .catch(err => {
-        setError('Something went wrong');
-        setIsLoading(false);
+        // setError('Something went wrong');
+        // setIsLoading(false);
+        dispatchHttp({ type: 'ERROR', errorData: 'Something went wrong' });
       });
   };
 
   const clearError = () => {
-    setError(null);
+    dispatchHttp({ type: 'CLEAR_ERROR' });
   };
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
 
       <IngredientForm
         onAddingIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
 
       <section>
